@@ -88,10 +88,19 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Chat API Error:', error);
+    
+    const rawError = error instanceof Error ? error.message : 'Unknown error';
+    let friendlyDetails = rawError;
+
+    // Check if the error is a 429 Rate Limit or Quota Exhausted error
+    if (rawError.includes('429') || rawError.includes('quota') || rawError.includes('RESOURCE_EXHAUSTED')) {
+      friendlyDetails = "You're speaking a bit too fast for our free AI tier! Please wait about 15 seconds and try sending your answer again.";
+    }
+
     return NextResponse.json(
       {
         error: 'Failed to generate response',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        details: friendlyDetails,
       },
       { status: 500 }
     );

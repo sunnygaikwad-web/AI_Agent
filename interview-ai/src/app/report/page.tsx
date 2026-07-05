@@ -20,6 +20,7 @@ import {
   Download,
   Sparkles,
   ArrowRight,
+  Loader2,
 } from 'lucide-react';
 
 export default function ReportPage() {
@@ -28,6 +29,46 @@ export default function ReportPage() {
   const [report, setReport] = useState<FinalReport | null>(state.finalReport);
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiSummary, setAiSummary] = useState('');
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownloadPDF = async () => {
+    setIsDownloading(true);
+    try {
+      // Dynamic import to avoid SSR issues
+      // @ts-ignore
+      const html2pdf = (await import('html2pdf.js')).default;
+      const element = document.getElementById('report-content');
+      if (!element) return;
+      
+      const opt = {
+        margin:       10,
+        filename:     `${state.candidateInfo?.fullName?.replace(/\s+/g, '_') || 'Candidate'}_Interview_Report.pdf`,
+        image:        { type: 'jpeg' as const, quality: 0.98 },
+        html2canvas:  { 
+          scale: 2, 
+          useCORS: true, 
+          letterRendering: true,
+          backgroundColor: '#0a0a0f', // Match the dark theme background
+          onclone: (clonedDoc: any) => {
+            // Force opacity 1 and remove animations on all elements in the cloned DOM
+            const elements = clonedDoc.querySelectorAll('*');
+            elements.forEach((el: any) => {
+              if (el.style.opacity === '0') el.style.opacity = '1';
+              el.style.animation = 'none';
+              el.style.transform = 'none';
+            });
+          }
+        },
+        jsPDF:        { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
+      };
+
+      await html2pdf().set(opt).from(element).save();
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const generateReport = useCallback(async () => {
     if (!state.candidateInfo || state.questionScores.length === 0) return;
@@ -223,7 +264,9 @@ export default function ReportPage() {
 
   return (
     <div className="container" style={{ maxWidth: '1000px', padding: 'clamp(1rem, 3vw, 2rem) clamp(0.75rem, 2vw, 1rem) 4rem' }}>
-      {/* Header */}
+      {/* Report Content Container (for PDF Generation) */}
+      <div id="report-content" style={{ padding: '1rem', background: 'var(--bg-primary)' }}>
+        {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
         <div className="animate-fade-in-up">
           <Sparkles
@@ -636,6 +679,7 @@ export default function ReportPage() {
       )}
 
       {/* Action Buttons */}
+      </div>
       <div
         style={{
           display: 'flex',
@@ -655,11 +699,13 @@ export default function ReportPage() {
         </Link>
         <button
           className="btn btn-secondary btn-lg"
-          onClick={() => window.print()}
+          onClick={handleDownloadPDF}
+          disabled={isDownloading}
+          style={{ opacity: isDownloading ? 0.7 : 1, cursor: isDownloading ? 'not-allowed' : 'pointer' }}
           id="download-report"
         >
-          <Download size={18} />
-          Print Report
+          {isDownloading ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+          {isDownloading ? 'Generating PDF...' : 'Download PDF'}
         </button>
       </div>
     </div>

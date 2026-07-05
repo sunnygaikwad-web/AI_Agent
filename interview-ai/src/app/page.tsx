@@ -96,7 +96,7 @@ export default function HomePage() {
             opacity: 0,
           }}
         >
-          INTERVIEW<span style={{ WebkitTextFillColor: 'var(--neon-magenta)', color: 'var(--neon-magenta)' }}>AI</span>
+          INTERVIEW <span style={{ WebkitTextFillColor: 'var(--neon-magenta)', color: 'var(--neon-magenta)' }}>AI</span>
         </h1>
 
         {/* Subtitle */}

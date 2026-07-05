@@ -102,3 +102,61 @@ export function parseFinalReport(response: string) {
   }
   return null;
 }
+
+export async function extractResumeData(base64Data: string, mimeType: string): Promise<Partial<import('./types').CandidateInfo> | null> {
+  const client = getClient();
+  const systemPrompt = `You are an expert HR assistant. Your task is to read the provided resume and extract the candidate's information into a JSON format that matches the following schema:
+{
+  "fullName": "string",
+  "degree": "string (e.g., B.Tech in Computer Science, BS in Software Engineering)",
+  "college": "string (e.g., University Name)",
+  "graduationYear": "string (e.g., 2024)",
+  "experience": "string: 'fresher' or 'experienced'",
+  "desiredRole": "string (e.g., Software Engineer, Frontend Developer)",
+  "targetCompany": "string (guess based on resume or leave empty string if not applicable)",
+  "programmingLanguages": "string (comma separated list of programming languages)",
+  "skills": "string (comma separated list of other skills, tools, frameworks)",
+  "projects": "string (a brief summary of 1-3 major projects. Include tech stack and key features. Format as a string, e.g., '1. Project A - Built with X, Y. 2. Project B - Built with Z.')"
+}
+
+Instructions:
+- Return ONLY valid JSON inside a \`\`\`json block.
+- Do not make up information. If something is completely missing, return an empty string for that field, except for experience which should default to 'fresher' if unclear.
+- Ensure the JSON is properly formatted and escaped.`;
+
+  try {
+    const response = await client.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: [
+        { 
+          role: 'user', 
+          parts: [
+            {
+              inlineData: {
+                data: base64Data,
+                mimeType: mimeType,
+              }
+            },
+            { text: 'Extract the information from this resume.' }
+          ] 
+        }
+      ],
+      config: {
+        systemInstruction: systemPrompt,
+        temperature: 0.2,
+      },
+    });
+
+    const text = response.text || '';
+    const jsonMatch = text.match(/```(?:json)?\s*\n([\s\S]*?)\n\s*```/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[1]);
+    } else {
+      // Try to parse the entire text if no markdown block
+      return JSON.parse(text);
+    }
+  } catch (error) {
+    console.error('Error extracting resume data with Gemini:', error);
+    return null;
+  }
+}

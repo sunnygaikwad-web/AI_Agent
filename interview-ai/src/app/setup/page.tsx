@@ -20,6 +20,9 @@ import {
   ArrowRight,
   ArrowLeft,
   Rocket,
+  Upload,
+  FileText,
+  Loader2,
 } from 'lucide-react';
 
 const steps = [
@@ -67,8 +70,64 @@ export default function SetupPage() {
     interviewDuration: 30,
   });
 
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
   const updateField = (field: keyof CandidateInfo, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      setUploadError('Only PDF files are supported.');
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadError(null);
+
+    const formData = new FormData();
+    formData.append('resume', file);
+
+    try {
+      const response = await fetch('/api/extract-resume', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to process resume');
+      }
+
+      if (result.data) {
+        // Update form data with extracted information
+        setFormData((prev) => ({
+          ...prev,
+          fullName: result.data.fullName || prev.fullName,
+          degree: result.data.degree || prev.degree,
+          college: result.data.college || prev.college,
+          graduationYear: result.data.graduationYear || prev.graduationYear,
+          experience: result.data.experience === 'experienced' ? 'experienced' : 'fresher',
+          desiredRole: result.data.desiredRole || prev.desiredRole,
+          targetCompany: result.data.targetCompany || prev.targetCompany,
+          programmingLanguages: result.data.programmingLanguages || prev.programmingLanguages,
+          skills: result.data.skills || prev.skills,
+          projects: result.data.projects || prev.projects,
+        }));
+      }
+    } catch (error) {
+      console.error('Resume upload error:', error);
+      setUploadError(error instanceof Error ? error.message : 'An error occurred during extraction');
+    } finally {
+      setIsUploading(false);
+      // Clear the input so the same file can be uploaded again if needed
+      e.target.value = '';
+    }
   };
 
   const isStepValid = (): boolean => {
@@ -474,6 +533,37 @@ Example:
           Tell us about yourself so we can customize your interview experience.
         </p>
       </div>
+
+      {/* Upload Resume Section */}
+      {currentStep === 0 && (
+        <div className="glass-card animate-fade-in-up" style={{ marginBottom: '2rem', textAlign: 'center', padding: '1.5rem' }}>
+          <div style={{ marginBottom: '1rem' }}>
+            <FileText size={32} style={{ color: 'var(--neon-cyan)', margin: '0 auto', marginBottom: '0.5rem' }} />
+            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', marginBottom: '0.25rem' }}>Auto-fill with Resume</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Save time by uploading your PDF resume. We will extract your details automatically.</p>
+          </div>
+          <input 
+            type="file" 
+            accept=".pdf" 
+            style={{ display: 'none' }} 
+            id="resume-upload" 
+            onChange={handleFileUpload} 
+            disabled={isUploading}
+          />
+          <label 
+            htmlFor="resume-upload" 
+            className="btn btn-primary" 
+            style={{ display: 'inline-flex', cursor: isUploading ? 'not-allowed' : 'pointer', opacity: isUploading ? 0.7 : 1, padding: '0.5rem 1rem' }}
+          >
+            {isUploading ? (
+              <><Loader2 size={16} className="animate-spin" style={{ marginRight: '0.5rem' }} /> Extracting...</>
+            ) : (
+              <><Upload size={16} style={{ marginRight: '0.5rem' }} /> Upload PDF Resume</>
+            )}
+          </label>
+          {uploadError && <p style={{ color: 'var(--accent-red)', fontSize: '0.8rem', marginTop: '0.75rem' }}>{uploadError}</p>}
+        </div>
+      )}
 
       {/* Progress Stepper */}
       <ProgressStepper steps={steps} currentStep={currentStep} />

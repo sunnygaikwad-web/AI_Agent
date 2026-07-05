@@ -104,6 +104,7 @@ export default function HomePage() {
           className="animate-fade-in-up stagger-2"
           style={{
             fontSize: 'clamp(1rem, 2vw, 1.25rem)',
+            fontFamily: '"Times New Roman", Times, serif',
             color: 'var(--text-secondary)',
             maxWidth: '600px',
             marginBottom: '0.75rem',

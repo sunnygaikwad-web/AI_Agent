@@ -101,7 +101,8 @@ export default function SetupPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to process resume');
+        setUploadError(result.details || result.error || 'Failed to process resume');
+        return;
       }
 
       if (result.data) {

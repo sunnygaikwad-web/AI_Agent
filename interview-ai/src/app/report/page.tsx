@@ -306,6 +306,7 @@ export default function ReportPage() {
 
       {/* Overall Score & Hiring Recommendation */}
       <div
+        className="report-hero"
         style={{
           display: 'flex',
           justifyContent: 'center',

@@ -44,6 +44,7 @@ export function ChatInput({
 
   return (
     <div
+      className="chat-input-container"
       style={{
         padding: '1rem 1.5rem',
         borderTop: '1px solid var(--border-default)',
@@ -52,6 +53,7 @@ export function ChatInput({
       }}
     >
       <div
+        className="chat-input-row"
         style={{
           display: 'flex',
           gap: '0.75rem',
@@ -116,6 +118,7 @@ export function ChatInput({
 
       {/* Character count & mode indicator */}
       <div
+        className="chat-input-info"
         style={{
           display: 'flex',
           justifyContent: 'space-between',

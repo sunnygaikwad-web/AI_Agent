@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { InterviewProvider } from "@/context/InterviewContext";
 import { Navbar } from "@/components/Navbar";
@@ -16,6 +16,13 @@ export const metadata: Metadata = {
     "behavioral interview",
     "technical interview",
   ],
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
 };
 
 export default function RootLayout({

@@ -259,11 +259,12 @@ export default function InterviewPage() {
       : 0;
 
   return (
-    <div style={{ display: 'flex', height: 'calc(100vh - 65px)' }}>
+    <div className="interview-layout" style={{ display: 'flex', height: 'calc(100vh - 65px)' }}>
       {/* Main Chat Area */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         {/* Top Bar */}
         <div
+          className="interview-topbar"
           style={{
             padding: '0.75rem 1.5rem',
             borderBottom: '1px solid var(--border-default)',
@@ -277,7 +278,7 @@ export default function InterviewPage() {
           }}
         >
           {/* Phase badges */}
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'nowrap', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', maxWidth: '100%', paddingBottom: '0.25rem' }}>
+          <div className="interview-phases" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'nowrap', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', maxWidth: '100%', paddingBottom: '0.25rem' }}>
             {phaseOrder.map((phase) => {
               const config = phaseConfig[phase];
               const phaseIdx = phaseOrder.indexOf(phase);
@@ -299,7 +300,7 @@ export default function InterviewPage() {
           </div>
 
           {/* Timer and controls */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div className="interview-controls" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <Timer
               durationMinutes={state.interviewDuration}
               startTime={state.interviewStartTime}

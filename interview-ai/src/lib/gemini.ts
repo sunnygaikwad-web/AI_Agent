@@ -103,7 +103,7 @@ export function parseFinalReport(response: string) {
   return null;
 }
 
-export async function extractResumeData(base64Data: string, mimeType: string): Promise<Partial<import('./types').CandidateInfo> | null> {
+export async function extractResumeData(base64Data: string, mimeType: string): Promise<Partial<import('./types').CandidateInfo>> {
   const client = getClient();
   const systemPrompt = `You are an expert HR assistant. Your task is to read the provided resume and extract the candidate's information into a JSON format that matches the following schema:
 {
@@ -124,39 +124,62 @@ Instructions:
 - Do not make up information. If something is completely missing, return an empty string for that field, except for experience which should default to 'fresher' if unclear.
 - Ensure the JSON is properly formatted and escaped.`;
 
-  try {
-    const response = await client.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: [
-        { 
-          role: 'user', 
-          parts: [
-            {
-              inlineData: {
-                data: base64Data,
-                mimeType: mimeType,
-              }
-            },
-            { text: 'Extract the information from this resume.' }
-          ] 
-        }
-      ],
-      config: {
-        systemInstruction: systemPrompt,
-        temperature: 0.2,
-      },
-    });
+  const maxRetries = 3;
+  let lastError: Error | null = null;
 
-    const text = response.text || '';
-    const jsonMatch = text.match(/```(?:json)?\s*\n([\s\S]*?)\n\s*```/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[1]);
-    } else {
-      // Try to parse the entire text if no markdown block
-      return JSON.parse(text);
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const response = await client.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: [
+          { 
+            role: 'user', 
+            parts: [
+              {
+                inlineData: {
+                  data: base64Data,
+                  mimeType: mimeType,
+                }
+              },
+              { text: 'Extract the information from this resume.' }
+            ] 
+          }
+        ],
+        config: {
+          systemInstruction: systemPrompt,
+          temperature: 0.2,
+        },
+      });
+
+      const text = response.text || '';
+      if (!text.trim()) {
+        throw new Error('Gemini returned an empty response. The resume may not be readable.');
+      }
+
+      const jsonMatch = text.match(/```(?:json)?\s*\n([\s\S]*?)\n\s*```/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[1]);
+      } else {
+        return JSON.parse(text);
+      }
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      const msg = lastError.message || '';
+
+      // If it's a rate limit error, wait and retry
+      if (msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED')) {
+        const delayMs = (attempt + 1) * 5000; // 5s, 10s, 15s
+        console.warn(`Rate limited on attempt ${attempt + 1}/${maxRetries}. Retrying in ${delayMs / 1000}s...`);
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+        continue;
+      }
+
+      // For non-rate-limit errors, throw immediately
+      throw lastError;
     }
-  } catch (error) {
-    console.error('Error extracting resume data with Gemini:', error);
-    return null;
   }
+
+  // All retries exhausted
+  throw new Error('Gemini API rate limit reached. Please wait about 30 seconds and try uploading your resume again.');
 }
+

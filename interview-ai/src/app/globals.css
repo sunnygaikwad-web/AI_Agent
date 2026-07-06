@@ -1043,6 +1043,24 @@ select.input-field {
 .stagger-5 { animation-delay: 0.5s; }
 .stagger-6 { animation-delay: 0.6s; }
 
+/* ---- Interview Page Layout Helpers ---- */
+.interview-layout {
+  overflow: hidden;
+}
+
+.interview-phases {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.interview-phases::-webkit-scrollbar {
+  display: none;
+}
+
+.interview-controls {
+  flex-shrink: 0;
+}
+
 /* ---- Responsive ---- */
 
 /* ---- Tablet (≤ 1024px) ---- */
@@ -1195,6 +1213,47 @@ select.input-field {
     font-size: 1rem;
     padding: 0.4rem 0.75rem;
   }
+
+  /* ---- Interview page mobile layout ---- */
+  .interview-topbar {
+    padding: 0.5rem 0.75rem !important;
+    gap: 0.5rem !important;
+  }
+
+  .interview-controls {
+    gap: 0.5rem !important;
+  }
+
+  .interview-controls .btn-sm {
+    padding: 0.35rem 0.6rem !important;
+    font-size: 0.65rem !important;
+  }
+
+  /* Score grid in chat feedback — 3 cols on tablet */
+  .score-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.5rem !important;
+  }
+
+  /* Chat input tighter */
+  .chat-input-container {
+    padding: 0.75rem !important;
+  }
+
+  /* Report hero closer */
+  .report-hero {
+    gap: 1.5rem !important;
+  }
+
+  /* Navbar — hide links on mobile, keep logo */
+  .navbar-links {
+    display: none;
+  }
+
+  /* Prevent iOS auto-zoom on input focus (min 16px) */
+  .input-field {
+    font-size: 16px !important;
+  }
 }
 
 /* ---- Phone (≤ 480px) ---- */
@@ -1329,5 +1388,65 @@ select.input-field {
   /* Neon divider */
   .neon-divider {
     margin: var(--space-md) 0;
+  }
+
+  /* ---- Interview page phone layout ---- */
+  .interview-layout {
+    height: calc(100vh - 56px) !important;
+  }
+
+  .interview-topbar {
+    padding: 0.35rem 0.5rem !important;
+    gap: 0.25rem !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .interview-phases {
+    gap: 0.2rem !important;
+  }
+
+  .interview-controls {
+    gap: 0.35rem !important;
+    justify-content: flex-end !important;
+  }
+
+  .interview-controls .btn-sm {
+    padding: 0.3rem 0.5rem !important;
+    font-size: 0.6rem !important;
+  }
+
+  /* Score grid — 2 cols on phone */
+  .score-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.35rem !important;
+  }
+
+  .score-grid .score-value {
+    font-size: 0.9rem !important;
+  }
+
+  /* Chat input compact */
+  .chat-input-container {
+    padding: 0.5rem !important;
+  }
+
+  .chat-input-row {
+    gap: 0.5rem !important;
+  }
+
+  .chat-input-info {
+    font-size: 0.6rem !important;
+    margin-top: 0.3rem !important;
+  }
+
+  /* Report hero stacked */
+  .report-hero {
+    gap: 1rem !important;
+    flex-direction: column !important;
+  }
+
+  .report-hero .glass-card {
+    padding: 1.5rem !important;
   }
 }

@@ -26,22 +26,20 @@ export async function POST(request: NextRequest) {
     const base64Data = buffer.toString('base64');
     
     // Extract structured data using Gemini directly from the PDF
+    // This function retries automatically on rate limits
     const extractedData = await extractResumeData(base64Data, file.type);
-
-    if (!extractedData) {
-      return NextResponse.json(
-        { error: 'Failed to extract candidate information from the resume.' },
-        { status: 500 }
-      );
-    }
 
     return NextResponse.json({ data: extractedData });
   } catch (error) {
     console.error('Extract Resume API Error:', error);
+    const rawError = error instanceof Error ? error.message : 'Unknown error';
+
+    // Return the actual error message — extractResumeData already provides
+    // user-friendly messages for rate limits
     return NextResponse.json(
       {
-        error: 'Failed to process resume',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: rawError,
+        details: rawError,
       },
       { status: 500 }
     );

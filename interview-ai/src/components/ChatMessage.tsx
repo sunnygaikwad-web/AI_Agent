@@ -31,6 +31,7 @@ export function ChatMessage({ message, showFeedback = true }: ChatMessageProps) 
       {showFeedback && message.score && (
         <div className="feedback-panel">
           <div
+            className="score-grid"
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(5, 1fr)',

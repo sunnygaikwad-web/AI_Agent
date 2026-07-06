@@ -29,7 +29,7 @@ export async function chatWithGemini(
   }));
 
   const response = await client.models.generateContent({
-    model: 'gemini-2.5-flash',
+    model: 'gemini-1.5-flash',
     contents: contents,
     config: {
       systemInstruction: systemPrompt,
@@ -130,7 +130,7 @@ Instructions:
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       const response = await client.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-1.5-flash',
         contents: [
           { 
             role: 'user', 
